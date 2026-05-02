@@ -30,7 +30,7 @@ export default function App() {
           className="text-xs tracking-widest uppercase mb-4 font-medium"
           style={{ color: "#2563eb" }}
         >
-          QR Safety Scanner
+          LinkGuard
         </p>
         <h1
           className="text-3xl font-semibold text-center mb-2"

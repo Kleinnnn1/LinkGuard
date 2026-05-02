@@ -22,8 +22,16 @@ export default function Scanner({ onResult }: Props) {
 
   const handleScan = async (targetUrl: string) => {
     if (!targetUrl) return setError("Please enter a URL.");
-    if (!isValidUrl(targetUrl))
-      return setError("Please enter a valid URL including https://");
+
+    let formattedUrl = targetUrl.trim();
+    if (
+      !formattedUrl.startsWith("http://") &&
+      !formattedUrl.startsWith("https://")
+    ) {
+      formattedUrl = `https://${formattedUrl}`;
+    }
+
+    if (!isValidUrl(formattedUrl)) return setError("Please enter a valid URL.");
 
     setError("");
     setScanning(true);
@@ -32,12 +40,12 @@ export default function Scanner({ onResult }: Props) {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: targetUrl }),
+        body: JSON.stringify({ url: formattedUrl }),
       });
 
       const data = await response.json();
       if (!response.ok) return setError(data.error || "Something went wrong.");
-      onResult({ url: targetUrl, status: data.status });
+      onResult({ url: formattedUrl, status: data.status });
       setUrl("");
     } catch {
       setError("Could not connect to server.");

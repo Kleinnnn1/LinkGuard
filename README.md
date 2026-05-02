@@ -204,6 +204,7 @@ Content-Type: application/json
 ## Author
 
 Kenneth Jhun N. Balino
+
 Full Stack Developer
 
 Built with React, Node.js, Express, Prisma, and Tailwind CSS

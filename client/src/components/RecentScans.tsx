@@ -16,6 +16,12 @@ export default function RecentScans({ scans, loading }: Props) {
   if (loading) {
     return (
       <div className="w-full max-w-xl">
+        <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 1; }
+        }
+      `}</style>
         <p
           className="text-xs tracking-widest uppercase mb-3 font-medium"
           style={{ color: "#9ca3af" }}
@@ -32,16 +38,29 @@ export default function RecentScans({ scans, loading }: Props) {
               <div className="flex flex-col gap-2 w-full mr-4">
                 <div
                   className="h-3 rounded"
-                  style={{ background: "#f3f4f6", width: "50%" }}
+                  style={{
+                    background: "#e5e7eb",
+                    width: "50%",
+                    animation: "pulse 1.5s ease-in-out infinite",
+                  }}
                 />
                 <div
                   className="h-2 rounded"
-                  style={{ background: "#f3f4f6", width: "75%" }}
+                  style={{
+                    background: "#e5e7eb",
+                    width: "75%",
+                    animation: "pulse 1.5s ease-in-out infinite",
+                    animationDelay: "0.2s",
+                  }}
                 />
               </div>
               <div
                 className="h-5 w-16 rounded-full shrink-0"
-                style={{ background: "#f3f4f6" }}
+                style={{
+                  background: "#e5e7eb",
+                  animation: "pulse 1.5s ease-in-out infinite",
+                  animationDelay: "0.4s",
+                }}
               />
             </div>
           ))}

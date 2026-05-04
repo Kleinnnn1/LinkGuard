@@ -3,6 +3,7 @@ import Scanner from "./components/Scanner";
 import ScanResult from "./components/ScanResult";
 import RecentScans from "./components/RecentScans";
 import type { Scan } from "./types";
+import Footer from "./components/Footer";
 
 export default function App() {
   const [result, setResult] = useState<Scan | null>(null);
@@ -47,6 +48,8 @@ export default function App() {
       <Scanner onResult={handleResult} />
       {result && <ScanResult scan={result} />}
       <RecentScans scans={scans} loading={loading} />
+
+      <Footer />
     </div>
   );
 }

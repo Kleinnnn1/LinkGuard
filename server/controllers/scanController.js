@@ -7,12 +7,38 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+const followRedirects = async (url) => {
+  try {
+    const redirectResponse = await axios.get(url, {
+      maxRedirects: 10,
+      timeout: 8000,
+      validateStatus: () => true,
+    });
+    return redirectResponse.request?.res?.responseUrl || url;
+  } catch (redirectError) {
+    console.warn("Redirect resolution failed, using original URL:", redirectError.message);
+    return url;
+  }
+};
+
 const checkUrl = async (req, res) => {
   const { url } = req.body;
 
   if (!url) return res.status(400).json({ error: "URL is required." });
 
   try {
+    // Step 1: Resolve the final URL after following all redirects
+    const finalUrl = await followRedirects(url);
+    console.log(`Original URL: ${url}`);
+    console.log(`Resolved URL: ${finalUrl}`);
+
+    // Step 2: Build threat entries — check both original and final URL
+    const threatEntries = [{ url }];
+    if (finalUrl !== url) {
+      threatEntries.push({ url: finalUrl });
+    }
+
+    // Step 3: Check against Google Safe Browsing API
     const response = await axios.post(
       `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${process.env.GOOGLE_API_KEY}`,
       {
@@ -29,21 +55,24 @@ const checkUrl = async (req, res) => {
           ],
           platformTypes: ["ANY_PLATFORM"],
           threatEntryTypes: ["URL"],
-          threatEntries: [{ url }],
+          threatEntries,
         },
       }
     );
 
-    const isMalicious = response.data.matches && response.data.matches.length > 0;
+    const isMalicious =
+      response.data.matches && response.data.matches.length > 0;
     const status = isMalicious ? "malicious" : "safe";
 
+    // Step 4: Save scan result to database
     await prisma.scan.create({
       data: { url, result: status },
     });
 
-    res.json({ status });
+    // Step 5: Return result along with the resolved URL for transparency
+    res.json({ status, resolvedUrl: finalUrl });
   } catch (error) {
-    console.error(error);
+    console.error("Scan error:", error);
     res.status(500).json({ error: "Something went wrong." });
   }
 };
@@ -64,6 +93,7 @@ const getHistory = async (req, res) => {
 
     res.json(mapped);
   } catch (error) {
+    console.error("History fetch error:", error);
     res.status(500).json({ error: "Something went wrong." });
   }
 };
